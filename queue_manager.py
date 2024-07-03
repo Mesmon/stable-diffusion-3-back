@@ -1,28 +1,25 @@
-import asyncio
 from services.generate_image import generate_image_function
 from models import PromptRequest
+from queue import Queue
+from threading import Thread
 
-request_queue = asyncio.Queue()
-processing = False
+task_queue = Queue()
 
-async def process_queue():
-    global processing
+def task_worker():
     while True:
-        request = await request_queue.get()
-        if request is None:
+        task = task_queue.get()
+        if task is None:
             break
-        try:
-            generate_image_function(request)
-        except Exception as e:
-            print(f"Error processing request: {e}")
-        finally:
-            request_queue.task_done()
-            processing = False
+        task()
+        task_queue.task_done()
+
+worker_thread = Thread(target=task_worker)
+worker_thread.start()
 
 def add_to_queue(request: PromptRequest):
-    global processing
-    loop = asyncio.get_event_loop()
-    loop.call_soon_threadsafe(request_queue.put_nowait, request)
-    if not processing:
-        processing = True
-        asyncio.create_task(process_queue())
+    task_queue.put(lambda: generate_image_function(request))
+
+
+def queue_cleanup_shutdown():
+    task_queue.put(None)
+    worker_thread.join()

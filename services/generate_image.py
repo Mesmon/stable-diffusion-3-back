@@ -42,7 +42,8 @@ def generate_image_function(request: PromptRequest):
     image.save(image_path)
     
     with open(image_path, "rb") as file:
-        res = supabase_client.storage.from_('stable-diffusion-results').upload(f"{image_id}.png", file.read())
+        content = file.read()
+        res = supabase_client.storage.from_('stable-diffusion-results').upload(f"{image_id}.png", content)
     
     if res.status_code == 200:
         os.remove(image_path)

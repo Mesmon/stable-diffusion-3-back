@@ -5,7 +5,7 @@ from queue_manager import add_to_queue
 router = APIRouter()
 
 @router.post("/generate-image/")
-async def generate_image(request: PromptRequest):
+def generate_image(request: PromptRequest):
     try:
         add_to_queue(request)
         return {"status": "Request added to the queue"}
