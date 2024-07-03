@@ -17,8 +17,13 @@ class PromptRequest(BaseModel):
 
 app = FastAPI()
 
-pipe = StableDiffusion3Pipeline.from_pretrained("stabilityai/stable-diffusion-3-medium-diffusers", torch_dtype=torch.float16)
-pipe.enable_model_cpu_offload()
+pipe = StableDiffusion3Pipeline.from_pretrained(
+    "stabilityai/stable-diffusion-3-medium-diffusers",
+    text_encoder_3=None,
+    tokenizer_3=None,
+    torch_dtype=torch.float16
+)
+pipe.to("cuda")
 
 @app.post("/generate-image/")
 async def generate_image(request: PromptRequest):
